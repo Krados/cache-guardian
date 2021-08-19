@@ -1,4 +1,4 @@
-module Krados/cache-guardian
+module github.com/Krados/cache-guardian
 
 go 1.15
 
