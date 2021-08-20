@@ -101,6 +101,8 @@ func TestGuardian_ConcurrentlyGet(t *testing.T) {
 		t.Errorf("cm.Set err %v", err)
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(2)
 	go func(innerCM *Guardian, innerHalt chan struct{}) {
 		<-innerHalt
 		_, err := innerCM.Get(key, func(key string) ([]byte, error) {
@@ -109,6 +111,7 @@ func TestGuardian_ConcurrentlyGet(t *testing.T) {
 		if err != nil {
 			t.Errorf("cm.Get err %v", err)
 		}
+		defer wg.Done()
 	}(cm, haltSignal)
 	go func(innerCM *Guardian, innerHalt chan struct{}) {
 		<-innerHalt
@@ -118,6 +121,7 @@ func TestGuardian_ConcurrentlyGet(t *testing.T) {
 		if err != nil {
 			t.Errorf("cm.Get err %v", err)
 		}
+		defer wg.Done()
 	}(cm, haltSignal)
 
 	// sleep for a while til all goroutines are ready
@@ -125,7 +129,7 @@ func TestGuardian_ConcurrentlyGet(t *testing.T) {
 	close(haltSignal)
 
 	// wait goroutines finishes their jobs
-	time.Sleep(time.Second * 6)
+	wg.Wait()
 
 	var wantOps int32 = 1
 	ops := fc.GetOpsGet()
@@ -142,12 +146,16 @@ func TestGuardian_ConcurrentlySet(t *testing.T) {
 	setFunc := func(key string) (err error) {
 		return fc.Set(key, []byte(key), time.Second)
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
 	go func(innerCM *Guardian, innerHalt chan struct{}) {
 		<-innerHalt
 		err := innerCM.Set(key, setFunc)
 		if err != nil {
 			t.Errorf("cm.Get err %v", err)
 		}
+		defer wg.Done()
 	}(cm, haltSignal)
 	go func(innerCM *Guardian, innerHalt chan struct{}) {
 		<-innerHalt
@@ -155,6 +163,7 @@ func TestGuardian_ConcurrentlySet(t *testing.T) {
 		if err != nil {
 			t.Errorf("cm.Get err %v", err)
 		}
+		defer wg.Done()
 	}(cm, haltSignal)
 
 	// sleep for a while til all goroutines are ready
@@ -162,7 +171,7 @@ func TestGuardian_ConcurrentlySet(t *testing.T) {
 	close(haltSignal)
 
 	// wait goroutines finishes their jobs
-	time.Sleep(time.Second * 6)
+	wg.Wait()
 
 	var wantOps int32 = 1
 	ops := fc.GetOpsSet()
