@@ -51,7 +51,7 @@ func (f *FakeAPICache) GetOpsSet() int32 {
 	return f.OpsSet
 }
 
-func TestCacheMiddleware_Get(t *testing.T) {
+func TestGuardian_Get(t *testing.T) {
 	fc := &FakeAPICache{}
 	key := "testKey"
 	g := New()
@@ -66,7 +66,7 @@ func TestCacheMiddleware_Get(t *testing.T) {
 	}
 }
 
-func TestCacheMiddleware_Set(t *testing.T) {
+func TestGuardian_Set(t *testing.T) {
 	fc := &FakeAPICache{M: make(map[string][]byte)}
 	key := "testKey"
 	cm := New()
@@ -89,7 +89,7 @@ func TestCacheMiddleware_Set(t *testing.T) {
 	}
 }
 
-func TestCacheMiddleware_ConcurrentlyGet(t *testing.T) {
+func TestGuardian_ConcurrentlyGet(t *testing.T) {
 	haltSignal := make(chan struct{})
 	fc := &FakeAPICache{M: make(map[string][]byte)}
 	key := "testKey"
@@ -134,7 +134,7 @@ func TestCacheMiddleware_ConcurrentlyGet(t *testing.T) {
 	}
 }
 
-func TestCacheMiddleware_ConcurrentlySet(t *testing.T) {
+func TestGuardian_ConcurrentlySet(t *testing.T) {
 	haltSignal := make(chan struct{})
 	fc := &FakeAPICache{M: make(map[string][]byte)}
 	key := "testKey"
